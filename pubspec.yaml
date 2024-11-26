@@ -18,7 +18,9 @@ dependencies:
   async: '>=2.8.2'
   meta: ^1.7.0
   iris_method_channel:
-    path: /Users/admin/codes/iris_method_channel_flutter
+    path: ../flutter-sdk-methodchannel
+  agora_video_canvas:
+    path: ./packages/agora_video_canvas
   js: '>=0.6.3'
 dev_dependencies:
   flutter_test:
@@ -43,4 +45,5 @@ flutter:
         pluginClass: AgoraRtcEngineWeb
         fileName: agora_rtc_engine_web.dart
       ohos:
+        package: io.agora.agora_rtc_ng
         pluginClass: AgoraRtcEnginePlugin

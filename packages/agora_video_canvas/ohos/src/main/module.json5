@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "agora_video_canvas",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

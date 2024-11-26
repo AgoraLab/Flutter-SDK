@@ -18,6 +18,7 @@
     "@ohos/flutter_module": "file:./entry",
     "agora_rtc_engine": "file:./har/agora_rtc_engine.har",
     "path_provider_ohos": "file:./har/path_provider_ohos.har",
-    "permission_handler_ohos": "file:./har/permission_handler_ohos.har"
+    "permission_handler_ohos": "file:./har/permission_handler_ohos.har",
+    "agora_video_canvas": "file:./har/agora_video_canvas.har"
   }
 }

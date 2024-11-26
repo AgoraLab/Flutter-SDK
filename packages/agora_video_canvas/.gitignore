@@ -8,6 +8,7 @@
 .buildlog/
 .history
 .svn/
+migrate_working_dir/
 
 # IntelliJ related
 *.iml
@@ -18,30 +19,12 @@
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-.vscode/
+#.vscode/
 
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
-**/pubspec.lock
+/pubspec.lock
 **/doc/api/
 .dart_tool/
 .packages
 build/
-third_party/
-!android/src/main/cpp/third_party/
-
-**/flutter/ephemeral/*
-**/generated_plugin_registrant.cc
-**/generated_plugin_registrant.h
-**/generated_plugins.cmake
-**/GeneratedPluginRegistrant.swift
-**/.plugin_dev
-
-.ccls-cache/
-
-test_shard/**/scripts/iris_web_version.js
-test_shard/**/web/iris_web_version.js
-
-# OHOS
-pub-cache
-har
