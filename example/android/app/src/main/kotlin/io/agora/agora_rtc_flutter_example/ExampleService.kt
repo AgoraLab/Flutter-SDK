@@ -72,32 +72,6 @@ class ExampleService: Service() {
     }
 
     private fun startForegroundService() {
-        createNotificationChannel(
-            applicationContext,
-            "MyChannelId",
-            "agora_rtc_engine_example",
-            "agora_rtc_engine_example running"
-        )
-
-        val notificationBuilder =
-            NotificationCompat
-                .Builder(this, "MyChannelId")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("agora_rtc_engine_example")
-                .setContentText("agora_rtc_engine_example running")
-                .setWhen(System.currentTimeMillis())
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentIntent(getContentIntent())
-                .setShowWhen(false)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            startForeground(
-                NOTIFICATION_ID_DAEMON_SERVICE,
-                notificationBuilder.build(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE xor ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-        } else {
-            startForeground(NOTIFICATION_ID_DAEMON_SERVICE, notificationBuilder.build())
-        }
     }
 
     private fun getContentIntent(): PendingIntent? {
@@ -113,8 +87,6 @@ class ExampleService: Service() {
     }
 
     private fun stopForegroundService() {
-        stopForeground(true)
-        stopSelf()
     }
 
     companion object {
