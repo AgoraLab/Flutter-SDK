@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_print
 
+import 'dart:io';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:agora_rtc_engine_example/config/agora.config.dart' as config;
 import 'package:agora_rtc_engine_example/components/example_actions_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 ///=============================================
@@ -40,36 +42,26 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     print("pip: didChangeAppLifecycleState: $state");
-    
-    if (state == AppLifecycleState.inactive) {
-      print("enter inactive");
 
-      /// Check the definition of `inactive`. Both Android and iOS will trigger `inactive`,
-      /// but the scenarios are different. Not all scenarios on iOS allow calling
-      /// `pipStart`, while Android does.
-      ///
-      /// Currently, setting `autoEnter` on Android is ineffective because the underlying
-      /// implementation does not set it. Therefore, it needs to be called manually here.
-      /// 
-      if(_lastAppLifecycleState != AppLifecycleState.paused && !_isPipAutoEnterSupported) {
+    if (state == AppLifecycleState.inactive) {
+      // if you set the root view as the source view, you can call pipStart to enter pip mode on iOS.
+      // however, if you call pipSetup after PlatformView is created, it may not work very well, coz
+      // the source view need some time to be ready. So the best practice is set the autoEnterEnabled to true if
+      // it is supported and call pipStart only in the resumed state.
+      if (_lastAppLifecycleState != AppLifecycleState.paused &&
+          !_isPipAutoEnterSupported) {
         await _engine.pipStart();
       }
-    } else if (state == AppLifecycleState.paused) {
-      print("enter background");
-
-      /// Important: Do not call `pipStart` here.
-      /// Both iOS and Android systems do not allow starting PiP (Picture-in-Picture) mode in the background.
-      /// On Android, it can be called in the inactive state.
-      /// Especially on iOS, calling it may trigger related errors causing PiP to reset.
-      /// Ensure that the PiP view is created early enough so that when switching to the background,
-      /// the PiP view is already created and the system will automatically start PiP.
     } else if (state == AppLifecycleState.resumed) {
-      print("enter foreground");
+      if (!Platform.isAndroid) {
+        // on Android, the pipStop is not supported, the pipStop operation is only bring the activity to background.
+        await _engine.pipStop();
+      }
     }
 
-    // do not auto enter pip when app recovered from paused state, adn the hidden state always
-    // triggers before the next state.
-    if(state != AppLifecycleState.hidden && _lastAppLifecycleState != state) {
+    // do not auto enter pip when app recovered from paused state, and the hidden state always
+    // triggers before change to the next state on both Android and iOS.
+    if (state != AppLifecycleState.hidden && _lastAppLifecycleState != state) {
       setState(() {
         _lastAppLifecycleState = state;
       });
@@ -109,6 +101,22 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
           connection: RtcConnection(channelId: _channelIdController.text),
         );
 
+        // call pipSetup here just for testing purpose
+        // in normal case, we often call pipDispose if remote user left the channel,
+        // call pipSetup here is just want to test whether if you change the remote user,
+        // the video track of pip view will be updated.
+        if (Platform.isIOS) {
+          _engine.pipSetup(AgoraPipOptions(
+            connection: RtcConnection(
+                channelId: _channelIdController.text, localUid: config.uid),
+            videoCanvas: VideoCanvas(
+                uid: rUid,
+                view: 0,
+                renderMode: RenderModeType.renderModeHidden,
+                sourceType: VideoSourceType.videoSourceRemote),
+          ));
+        }
+
         setState(() {
           _videoViewController = newVideoViewController;
         });
@@ -116,8 +124,6 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
       onUserOffline:
           (RtcConnection connection, int rUid, UserOfflineReasonType reason) {
         print('userOffline: $rUid');
-
-        _engine.pipStop();
       },
       onLeaveChannel: (RtcConnection connection, RtcStats stats) {},
       onRemoteVideoStateChanged:
@@ -140,15 +146,19 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
     var isPipSupported = await _engine.isPipSupported();
     var isPipAutoEnterSupported = await _engine.isPipAutoEnterSupported();
 
-    if(isPipSupported) {
+    if (isPipSupported) {
       await _engine.pipSetup(AgoraPipOptions(
         autoEnterEnabled: isPipAutoEnterSupported,
+        // android only
         aspectRatioX: 16,
         aspectRatioY: 9,
         sourceRectHintLeft: 0,
         sourceRectHintTop: 0,
         sourceRectHintRight: 100,
         sourceRectHintBottom: 100,
+        // ios only
+        preferredContentWidth: 960,
+        preferredContentHeight: 540,
       ));
     }
 
@@ -179,9 +189,21 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
     return Stack(
       alignment: Alignment.center,
       children: [
-        if(_videoViewController != null)
+        if (_videoViewController != null)
           AgoraVideoView(
             controller: _videoViewController!,
+            onAgoraVideoViewCreated: (viewId) async {
+              print("onAgoraVideoViewCreated $viewId");
+              _engine.pipSetup(AgoraPipOptions(
+                connection: RtcConnection(
+                    channelId: _channelIdController.text, localUid: config.uid),
+                videoCanvas: VideoCanvas(
+                    uid: _videoViewController!.canvas.uid,
+                    view: viewId,
+                    renderMode: RenderModeType.renderModeHidden,
+                    sourceType: VideoSourceType.videoSourceRemote),
+              ));
+            },
           ),
       ],
     );
@@ -195,8 +217,8 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
       );
     }
 
-    // only show the video view in pip mode
-    if (_isInPipMode) {
+    // only show the video view in pip mode on Android
+    if (Platform.isAndroid && _isInPipMode) {
       return _videoViewStack();
     }
 
