@@ -61,11 +61,10 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
       ///
       /// Currently, setting `autoEnter` on Android is ineffective because the underlying
       /// implementation does not set it. Therefore, it needs to be called manually here.
-      
+
       if (Platform.isAndroid) {
         await _remotePipControllers.entries.first.value.startPictureInPicture();
       }
-      
     } else if (state == AppLifecycleState.paused) {
       print("enter background");
 
@@ -155,7 +154,8 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
         setState(() {
           remoteUid.removeWhere((element) => element == rUid);
           final remotePipController = _remotePipControllers.remove(rUid);
-          if (_isInPipMode && remotePipController?.isInPictureInPictureMode == true) {
+          if (_isInPipMode &&
+              remotePipController?.isInPictureInPictureMode == true) {
             remotePipController!.destroyPictureInPicture();
           }
         });
@@ -181,7 +181,7 @@ class _State extends State<PictureInPicture> with WidgetsBindingObserver {
       },
       onPipStateChanged: (state) {
         logSink.log('[onPipStateChanged] state: $state');
-        
+
         setState(() {
           _isInPipMode = state == PipState.pipStateStarted;
         });
