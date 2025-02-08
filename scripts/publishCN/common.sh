@@ -12,6 +12,3 @@ new_description="Flutter plugin of Shengwang RTC SDK, allow you to simply integr
 
 old_link="www.agora.io"
 new_link="www.shengwang.cn"
-
-old_node_modules="node_modules/agora-electron-sdk"
-new_node_modules="node_modules/shengwang-electron-sdk"
