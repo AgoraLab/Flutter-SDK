@@ -1,0 +1,12 @@
+name: On PR
+
+on:
+  pull_request:
+    types: [opened, closed, synchronize, labeled]
+
+jobs:
+  add-comment:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
